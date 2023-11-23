@@ -4,7 +4,7 @@ This repository hosts the data processing and machine learning code for backgrou
 This animation shows neutron scattering events as the beam with $\lambda$=4 Å reaches the sample environment.
 <table>
   <tr>
-    <td><img src=https://github.com/pkaracosta/Machine_Learning_background_prediction/blob/main/animation/zy_animation_4_full.gif" alt="GIF 1"></td>
-    <td><img src=https://github.com/pkaracosta/Machine_Learning_background_prediction/blob/main/animation/zx_animation_4_full.gif" alt="GIF 1"></td>
+    <td><img src="https://github.com/pkaracosta/Machine_Learning_background_prediction/blob/main/animation/zy_animation_4_full.gif" alt="GIF 1"></td>
+    <td><img src="https://github.com/pkaracosta/Machine_Learning_background_prediction/blob/main/animation/zx_animation_4_full.gif" alt="GIF 1"></td>
   </tr>
 </table>
