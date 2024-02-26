@@ -1,0 +1,892 @@
+/********************************************************************************
+* 
+* McStas, neutron ray-tracing package
+*         Copyright (C) 1997-2008, All rights reserved
+*         Risoe National Laboratory, Roskilde, Denmark
+*         Institut Laue Langevin, Grenoble, France
+* 
+* This file was written by McStasScript, which is a 
+* python based McStas instrument generator written by 
+* Mads Bertelsen in 2019 while employed at the 
+* European Spallation Source Data Management and 
+* Software Centre
+* 
+* Instrument BIFROST
+* 
+* %Identification
+* Written by: Petroula Karakosta
+* Date: 16:50:32 on February 21, 2024
+* Origin: Niels Bohr Institute
+* %INSTRUMENT_SITE: Generated_instruments
+* 
+* 
+* %Parameters
+* 
+* %End 
+********************************************************************************/
+
+DEFINE INSTRUMENT BIFROST (
+double wavelength = 2.381, // [AA]  Mean wavelength of neutrons
+double d_wavelength = 0.016, // [AA]  Wavelength spread of neutrons
+double beam_div = 29.4, // [acrmin] Values between 20-40
+double sample_radius = 0.00208, // [m] Radius of powder sample (cylinder) or crystal sample (sphere)
+double sample_height = 0.02541, // [m] Height of powder sample (cylinder)
+double detector_rad = 1, // [m] Detector radius
+string material = "Na2Ca3Al2F14", // Choice of sample material
+double level = 100 
+)
+
+DECLARE 
+%{
+int logic_level[100];
+int iterate;
+double slit_width = 0;
+double slit_height = 0;
+double dist_L = 0.05;
+double dist_D = 0;
+double outer_large_rad = 0.299;
+double coll_rad = 0.349;
+double coll_div = 0;
+double coll_length = 0;
+double container_radius;
+double container_height;
+double number_of_activations_powder = 1;
+double width_of_slit;
+double nslit;
+double roc_angle;
+%}
+
+USERVARS 
+%{
+int scatter_count;
+int sample_scatter_count;
+%}
+
+INITIALIZE 
+%{
+// Start of initialize for generated BIFROST
+
+for (iterate=0;iterate<level;iterate++)
+  logic_level[iterate] = 1;
+for (iterate=level;iterate<100;iterate++)
+  logic_level[iterate] = 0;
+container_radius = sample_radius + 0.5E-3;
+container_height = sample_height + 2*0.5E-3;
+slit_width = 2*sample_radius + 2*dist_L*tan(beam_div/60 * PI/180);
+slit_height = sample_height + 2*dist_L*tan(beam_div/60 * PI/180);
+dist_D = slit_width/tan(beam_div/60 * PI/180);
+coll_div = atan(2*sample_radius/detector_rad)*180/PI*60;
+coll_length = detector_rad - coll_rad - 5E-2;
+width_of_slit = coll_length*tan(coll_div*PI/(60*180));
+nslit = ceil(coll_rad*fabs(2*PI)/width_of_slit);
+roc_angle=360/nslit;
+printf("%f", roc_angle);
+printf("%f", nslit);
+
+%}
+
+TRACE 
+COMPONENT init = Union_init()
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Al_mat_inc = Incoherent_process(
+ sigma = 0.0328, packing_factor = 0.4,
+ unit_cell_volume = 66.4)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Al_mat_pow = Powder_process(
+ reflections = "Al.laz", packing_factor = 0.4)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Nb3Sn_inc = Incoherent_process(
+ sigma = 0.05857, packing_factor = 0.6,
+ unit_cell_volume = 150.957)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Nb3Sn_pow = Powder_process(
+ reflections = "Nb3Sn.laz", packing_factor = 0.6)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Nb3Sn = Union_make_material(
+ process_string = "Nb3Sn_inc,Nb3Sn_pow,Al_mat_inc,Al_mat_pow", my_absorption = 3.79676)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Al_mat_inc2 = Incoherent_process(
+ sigma = 0.0328, packing_factor = 0.4,
+ unit_cell_volume = 66.4)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Al_mat_pow2 = Powder_process(
+ reflections = "Al.laz", packing_factor = 0.4)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT NbTi_inc = Incoherent_process(
+ sigma = 5.74486, packing_factor = 0.6,
+ unit_cell_volume = 70.6913)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT NbTi_pow = Powder_process(
+ reflections = "NbTi.laz", packing_factor = 0.6)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT NbTi = Union_make_material(
+ process_string = "NbTi_inc,NbTi_pow,Al_mat_inc2,Al_mat_pow2", my_absorption = 12.8467)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Na2Ca3Al2F14_inc = Incoherent_process(
+ sigma = 13.6704, unit_cell_volume = 1079.1)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Na2Ca3Al2F14_pow = Powder_process(
+ reflections = "Na2Ca3Al2F14.laz")
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Na2Ca3Al2F14 = Union_make_material(
+ process_string = "Na2Ca3Al2F14_inc,Na2Ca3Al2F14_pow", my_absorption = 1.09217)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Al_inc = Incoherent_process(
+ sigma = 0.0328, unit_cell_volume = 66.4)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Al_pow = Powder_process(
+ reflections = "Al.laz")
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Al = Union_make_material(
+ process_string = "Al_inc,Al_pow", my_absorption = 1.39157)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT I2_inc = Incoherent_process(
+ sigma = 2.48, unit_cell_volume = 331.78)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT I2_pow = Powder_process(
+ reflections = "I2.laz")
+AT (0,0,0) ABSOLUTE
+
+COMPONENT I2 = Union_make_material(
+ process_string = "I2_inc,I2_pow", my_absorption = 14.8291)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Al2O3_sapphire_inc = Incoherent_process(
+ sigma = 0.1128, unit_cell_volume = 254.52)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Al2O3_sapphire_pow = Powder_process(
+ reflections = "Al2O3_sapphire.laz")
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Al2O3_sapphire = Union_make_material(
+ process_string = "Al2O3_sapphire_inc,Al2O3_sapphire_pow", my_absorption = 1.09029)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT H2O_ice_1h_inc = Incoherent_process(
+ sigma = 642.08, unit_cell_volume = 129.17)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT H2O_ice_1h_pow = Powder_process(
+ reflections = "H2O_ice_1h.laz")
+AT (0,0,0) ABSOLUTE
+
+COMPONENT H2O_ice_1h = Union_make_material(
+ process_string = "H2O_ice_1h_inc,H2O_ice_1h_pow", my_absorption = 2.05992)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Y2O3_inc = Incoherent_process(
+ sigma = 4.832, unit_cell_volume = 1192.3)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Y2O3_pow = Powder_process(
+ reflections = "Y2O3.laz")
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Y2O3 = Union_make_material(
+ process_string = "Y2O3_inc,Y2O3_pow", my_absorption = 3.43538)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Y3Fe5O12_YIG_inc = Incoherent_process(
+ sigma = 19.672, unit_cell_volume = 1895.57)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Y3Fe5O12_YIG_pow = Powder_process(
+ reflections = "Y3Fe5O12_YIG.laz")
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Y3Fe5O12_YIG = Union_make_material(
+ process_string = "Y3Fe5O12_YIG_inc,Y3Fe5O12_YIG_pow", my_absorption = 7.02269)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT UO2_inc = Incoherent_process(
+ sigma = 0.0264, unit_cell_volume = 163.488)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT UO2_pow = Powder_process(
+ reflections = "UO2.laz")
+AT (0,0,0) ABSOLUTE
+
+COMPONENT UO2 = Union_make_material(
+ process_string = "UO2_inc,UO2_pow", my_absorption = 18.5222)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Sn_beta_inc = Incoherent_process(
+ sigma = 0.088, unit_cell_volume = 108.25)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Sn_beta_pow = Powder_process(
+ reflections = "Sn_beta.laz")
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Sn_beta = Union_make_material(
+ process_string = "Sn_beta_inc,Sn_beta_pow", my_absorption = 2.31316)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT B4C_inc = Incoherent_process(
+ sigma = 61.209, unit_cell_volume = 328.9)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT B4C_pow = Powder_process(
+ reflections = "B4C.laz")
+AT (0,0,0) ABSOLUTE
+
+COMPONENT B4C = Union_make_material(
+ process_string = "B4C_inc,B4C_pow", my_absorption = 8395.26)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT lsco_64_inc = Incoherent_process(
+ sigma = 11.2528, unit_cell_volume = 374.926)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT lsco_64_pow = Powder_process(
+ reflections = "lsco_64.laz")
+AT (0,0,0) ABSOLUTE
+
+COMPONENT lsco_64 = Union_make_material(
+ process_string = "lsco_64_inc,lsco_64_pow", my_absorption = 23.1734)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Cu_inc = Incoherent_process(
+ sigma = 2.2, unit_cell_volume = 47.24)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Cu_pow = Powder_process(
+ reflections = "Cu.laz")
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Cu = Union_make_material(
+ process_string = "Cu_inc,Cu_pow", my_absorption = 32.0068)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT V_inc = Incoherent_process(
+ sigma = 9.87, unit_cell_volume = 27.66)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT V_pow = Powder_process(
+ reflections = "V.laz")
+AT (0,0,0) ABSOLUTE
+
+COMPONENT V = Union_make_material(
+ process_string = "V_inc,V_pow", my_absorption = 36.7317)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Cd_inc = Incoherent_process(
+ sigma = 6.92, unit_cell_volume = 43.11)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Cd_pow = Powder_process(
+ reflections = "Cd.laz")
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Cd = Union_make_material(
+ process_string = "Cd_inc,Cd_pow", my_absorption = 11691)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Gd_inc = Incoherent_process(
+ sigma = 302, unit_cell_volume = 66.21)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Gd_pow = Powder_process(
+ reflections = "Gd.laz")
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Gd = Union_make_material(
+ process_string = "Gd_inc,Gd_pow", my_absorption = 150128)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT sample_position = Arm()
+AT (0,0,0) ABSOLUTE
+
+COMPONENT source = Source_simple(
+ yheight = 0.03, xwidth = 0.03,
+ dist = dist_D, focus_xw = slit_width,
+ focus_yh = slit_height, lambda0 = wavelength,
+ dlambda = d_wavelength, flux = 1E+13)
+AT (0,0,-(dist_D+dist_L+outer_large_rad)) RELATIVE sample_position
+
+COMPONENT slit = Slit(
+ xwidth = slit_width, yheight = slit_width)
+AT (0,0,-(dist_L+outer_large_rad)) RELATIVE sample_position
+
+COMPONENT powder_sample = Union_cylinder(
+ material_string = material, priority = 200,
+ radius = sample_radius, yheight = sample_height,
+ number_of_activations = number_of_activations_powder)
+AT (0,0,0) RELATIVE sample_position
+
+COMPONENT sample_container = Union_cylinder(
+ material_string = "Al", priority = 199,
+ radius = container_radius, yheight = container_height,
+ p_interact = 0.25, number_of_activations = number_of_activations_powder)
+AT (0,0,0) RELATIVE sample_position
+
+COMPONENT outer_thin = Union_cylinder(
+ material_string = "Al", priority = 11,
+ radius = 0.29625, yheight = 0.2275,
+ p_interact = 0.25, number_of_activations = logic_level[0])
+AT (0,0,0) RELATIVE sample_position
+
+COMPONENT outer_up = Union_cylinder(
+ material_string = "Al", priority = 12,
+ radius = 0.299, yheight = 0.183125,
+ p_interact = 0.25, number_of_activations = logic_level[0])
+AT (0,0.119375,0) RELATIVE sample_position
+
+COMPONENT outer_down = Union_cylinder(
+ material_string = "Al", priority = 13,
+ radius = 0.299, yheight = 0.208125,
+ p_interact = 0.25, number_of_activations = logic_level[0])
+AT (0,-0.131875,0) RELATIVE sample_position
+
+COMPONENT outer_vac = Union_cylinder(
+ material_string = "Vacuum", priority = 14,
+ radius = 0.291, yheight = 0.4375,
+ p_interact = 0.25, number_of_activations = logic_level[0])
+AT (0,0.0031249999999999993,0) RELATIVE sample_position
+
+COMPONENT middle = Union_cylinder(
+ material_string = "Al", priority = 21,
+ radius = 0.285, yheight = 0.487,
+ p_interact = 0.25, number_of_activations = logic_level[1])
+AT (0,0.04375,0) RELATIVE sample_position
+
+COMPONENT middle_vac = Union_cylinder(
+ material_string = "Vacuum", priority = 22,
+ radius = 0.2795, yheight = 0.4775,
+ p_interact = 0.25, number_of_activations = logic_level[1])
+AT (0,0.00625,0) RELATIVE middle
+
+COMPONENT inner_thin = Union_cylinder(
+ material_string = "Al", priority = 30,
+ radius = 0.255625, yheight = 0.045,
+ p_interact = 0.25, number_of_activations = logic_level[2])
+AT (0,0,0) RELATIVE sample_position
+
+COMPONENT inner_up = Union_cylinder(
+ material_string = "Al", priority = 30.1,
+ radius = 0.275, yheight = 0.1475,
+ p_interact = 0.25, number_of_activations = logic_level[2])
+AT (0,0.09375,0) RELATIVE inner_thin
+
+COMPONENT inner_down = Union_cylinder(
+ material_string = "Al", priority = 30.2,
+ radius = 0.275, yheight = 0.1475,
+ p_interact = 0.25, number_of_activations = logic_level[2])
+AT (0,-0.09375,0) RELATIVE inner_thin
+
+COMPONENT inner_vac_middle = Union_cylinder(
+ material_string = "Vacuum", priority = 30.5,
+ radius = 0.253125, yheight = 0.035,
+ p_interact = 0.25, number_of_activations = logic_level[2])
+AT (0,0,0) RELATIVE inner_thin
+
+COMPONENT inner_vac_up = Union_cylinder(
+ material_string = "Vacuum", priority = 30.3,
+ radius = 0.27, yheight = 0.0975,
+ p_interact = 0.25, number_of_activations = logic_level[2])
+AT (0,0.10275000000000001,0) RELATIVE inner_thin
+
+COMPONENT inner_vac_down = Union_cylinder(
+ material_string = "Vacuum", priority = 30.4,
+ radius = 0.27, yheight = 0.0975,
+ p_interact = 0.25, number_of_activations = logic_level[2])
+AT (0,-0.10275000000000001,0) RELATIVE inner_thin
+
+COMPONENT l3_cone_up = Union_cone(
+ material_string = "Al", priority = 69,
+ radius_top = 0.25, radius_bottom = 0.11,
+ yheight = 0.01, p_interact = 0.25,
+ number_of_activations = logic_level[2])
+AT (0,0.013,0) RELATIVE inner_vac_middle
+
+COMPONENT l3_cone_down = Union_cone(
+ material_string = "Al", priority = 69.5,
+ radius_top = 0.11, radius_bottom = 0.25,
+ yheight = 0.01, p_interact = 0.25,
+ number_of_activations = logic_level[2])
+AT (0,-0.013,0) RELATIVE inner_vac_middle
+
+COMPONENT gd_cone_up = Union_cone(
+ material_string = "Gd", priority = 68.9,
+ radius_top = 0.25, radius_bottom = 0.11,
+ yheight = 0.01, p_interact = 0.25,
+ number_of_activations = logic_level[15])
+AT (0,-0.0001,0) RELATIVE l3_cone_up
+
+COMPONENT gd_cone_down = Union_cone(
+ material_string = "Gd", priority = 69.4,
+ radius_top = 0.11, radius_bottom = 0.25,
+ yheight = 0.01, p_interact = 0.25,
+ number_of_activations = logic_level[15])
+AT (0,0.0001,0) RELATIVE l3_cone_down
+
+COMPONENT c2c3_up = Union_cylinder(
+ material_string = "Al", priority = 63.2,
+ radius = 0.105, yheight = 0.11125,
+ p_interact = 0.25, number_of_activations = logic_level[3])
+AT (0,0.073125,0) RELATIVE sample_position
+
+COMPONENT c2c3_vac_up = Union_cylinder(
+ material_string = "Vacuum", priority = 63.3,
+ radius = 0.1, yheight = 0.11126,
+ p_interact = 0.25, number_of_activations = logic_level[3])
+AT (0,0,0) RELATIVE c2c3_up
+
+COMPONENT c2c3_down = Union_cylinder(
+ material_string = "Al", priority = 63.7,
+ radius = 0.105, yheight = 0.11125,
+ p_interact = 0.25, number_of_activations = logic_level[3])
+AT (0,-0.073125,0) RELATIVE sample_position
+
+COMPONENT c2c3_vac_down = Union_cylinder(
+ material_string = "Vacuum", priority = 63.8,
+ radius = 0.1, yheight = 0.11126,
+ p_interact = 0.25, number_of_activations = logic_level[3])
+AT (0,0,0) RELATIVE c2c3_down
+
+COMPONENT inner_wall = Union_cylinder(
+ material_string = "Al", priority = 70,
+ radius = 0.025, yheight = 0.338,
+ p_interact = 0.25, number_of_activations = logic_level[10])
+AT (0,0,0) RELATIVE sample_position
+
+COMPONENT hollow_tube = Union_cylinder(
+ material_string = "Vacuum", priority = 101,
+ radius = 0.02, yheight = 0.347,
+ p_interact = 0.25, number_of_activations = logic_level[10])
+AT (0,0,0) RELATIVE sample_position
+
+COMPONENT s1 = Union_cylinder(
+ material_string = "Al", priority = 56,
+ radius = 0.044375, yheight = 0.025,
+ p_interact = 0.25, number_of_activations = logic_level[4])
+AT (0,0,0) RELATIVE sample_position
+
+COMPONENT s2 = Union_cylinder(
+ material_string = "Al", priority = 55,
+ radius = 0.088125, yheight = 0.0259375,
+ p_interact = 0.25, number_of_activations = logic_level[4])
+AT (0,0,0) RELATIVE sample_position
+
+COMPONENT s3 = Union_cylinder(
+ material_string = "Al", priority = 54,
+ radius = 0.124375, yheight = 0.02875,
+ p_interact = 0.25, number_of_activations = logic_level[4])
+AT (0,0,0) RELATIVE sample_position
+
+COMPONENT s4 = Union_cylinder(
+ material_string = "Al", priority = 53,
+ radius = 0.155625, yheight = 0.03125,
+ p_interact = 0.25, number_of_activations = logic_level[4])
+AT (0,0,0) RELATIVE sample_position
+
+COMPONENT s5 = Union_cylinder(
+ material_string = "Al", priority = 52,
+ radius = 0.18875, yheight = 0.033125,
+ p_interact = 0.25, number_of_activations = logic_level[4])
+AT (0,0,0) RELATIVE sample_position
+
+COMPONENT s6 = Union_cylinder(
+ material_string = "Al", priority = 51,
+ radius = 0.22375, yheight = 0.036875,
+ p_interact = 0.25, number_of_activations = logic_level[4])
+AT (0,0,0) RELATIVE sample_position
+
+COMPONENT s1_vac = Union_cylinder(
+ material_string = "Vacuum", priority = 56.5,
+ radius = 0.039375, yheight = 0.0175,
+ p_interact = 0.25, number_of_activations = logic_level[4])
+AT (0,0,0) RELATIVE sample_position
+
+COMPONENT s2_vac = Union_cylinder(
+ material_string = "Vacuum", priority = 55.5,
+ radius = 0.081875, yheight = 0.01875,
+ p_interact = 0.25, number_of_activations = logic_level[4])
+AT (0,0,0) RELATIVE sample_position
+
+COMPONENT s3_vac = Union_cylinder(
+ material_string = "Vacuum", priority = 54.5,
+ radius = 0.1175, yheight = 0.021875,
+ p_interact = 0.25, number_of_activations = logic_level[4])
+AT (0,0,0) RELATIVE sample_position
+
+COMPONENT s4_vac = Union_cylinder(
+ material_string = "Vacuum", priority = 53.5,
+ radius = 0.1475, yheight = 0.02375,
+ p_interact = 0.25, number_of_activations = logic_level[4])
+AT (0,0,0) RELATIVE sample_position
+
+COMPONENT s5_vac = Union_cylinder(
+ material_string = "Vacuum", priority = 52.5,
+ radius = 0.17875, yheight = 0.02625,
+ p_interact = 0.25, number_of_activations = logic_level[4])
+AT (0,0,0) RELATIVE sample_position
+
+COMPONENT s6_vac = Union_cylinder(
+ material_string = "Vacuum", priority = 51.5,
+ radius = 0.212188, yheight = 0.02875,
+ p_interact = 0.25, number_of_activations = logic_level[4])
+AT (0,0,0) RELATIVE sample_position
+
+COMPONENT beam_path = Union_box(
+ material_string = "Vacuum", priority = 71,
+ xwidth = 0.015, yheight = 0.015,
+ zdepth = 0.5, p_interact = 0.25,
+ number_of_activations = logic_level[4])
+AT (0,0,0) RELATIVE sample_position
+
+COMPONENT c1_up = Union_cylinder(
+ material_string = "Nb3Sn", priority = 65,
+ radius = 0.059375, yheight = 0.053125,
+ p_interact = 0.25, number_of_activations = logic_level[3])
+AT (0,0.0428125,0) RELATIVE sample_position
+
+COMPONENT c2_up = Union_cylinder(
+ material_string = "Nb3Sn", priority = 64,
+ radius = 0.099375, yheight = 0.060935,
+ p_interact = 0.25, number_of_activations = logic_level[3])
+AT (0,0.048907500000000007,0) RELATIVE sample_position
+
+COMPONENT c3_up = Union_cylinder(
+ material_string = "NbTi", priority = 63,
+ radius = 0.135625, yheight = 0.066573,
+ p_interact = 0.25, number_of_activations = logic_level[3])
+AT (0,0.052656499999999995,0) RELATIVE sample_position
+
+COMPONENT c4_up = Union_cylinder(
+ material_string = "NbTi", priority = 62,
+ radius = 0.166875, yheight = 0.064052,
+ p_interact = 0.25, number_of_activations = logic_level[3])
+AT (0,0.0539065,0) RELATIVE sample_position
+
+COMPONENT c5_up = Union_cylinder(
+ material_string = "NbTi", priority = 61,
+ radius = 0.2, yheight = 0.06189,
+ p_interact = 0.25, number_of_activations = logic_level[3])
+AT (0,0.054999000000000006,0) RELATIVE sample_position
+
+COMPONENT c6_up = Union_cylinder(
+ material_string = "NbTi", priority = 60,
+ radius = 0.23, yheight = 0.059688,
+ p_interact = 0.25, number_of_activations = logic_level[3])
+AT (0,0.056094000000000005,0) RELATIVE sample_position
+
+COMPONENT c1_up_vac = Union_cylinder(
+ material_string = "Vacuum", priority = 65.1,
+ radius = 0.027385, yheight = 0.053225,
+ p_interact = 0.25, number_of_activations = logic_level[3])
+AT (0,0.050937500000000004,0) RELATIVE sample_position
+
+COMPONENT c2_up_vac = Union_cylinder(
+ material_string = "Vacuum", priority = 64.1,
+ radius = 0.065135, yheight = 0.061035,
+ p_interact = 0.25, number_of_activations = logic_level[3])
+AT (0,0.0581275,0) RELATIVE sample_position
+
+COMPONENT c1_down = Union_cylinder(
+ material_string = "Nb3Sn", priority = 65.5,
+ radius = 0.059375, yheight = 0.053125,
+ p_interact = 0.25, number_of_activations = logic_level[3])
+AT (0,-0.0428125,0) RELATIVE sample_position
+
+COMPONENT c2_down = Union_cylinder(
+ material_string = "Nb3Sn", priority = 64.5,
+ radius = 0.099375, yheight = 0.060935,
+ p_interact = 0.25, number_of_activations = logic_level[3])
+AT (0,-0.048907500000000007,0) RELATIVE sample_position
+
+COMPONENT c3_down = Union_cylinder(
+ material_string = "NbTi", priority = 63.5,
+ radius = 0.135625, yheight = 0.066573,
+ p_interact = 0.25, number_of_activations = logic_level[3])
+AT (0,-0.052656499999999995,0) RELATIVE sample_position
+
+COMPONENT c4_down = Union_cylinder(
+ material_string = "NbTi", priority = 62.5,
+ radius = 0.166875, yheight = 0.064052,
+ p_interact = 0.25, number_of_activations = logic_level[3])
+AT (0,-0.0539065,0) RELATIVE sample_position
+
+COMPONENT c5_down = Union_cylinder(
+ material_string = "NbTi", priority = 61.5,
+ radius = 0.2, yheight = 0.06189,
+ p_interact = 0.25, number_of_activations = logic_level[3])
+AT (0,-0.054999000000000006,0) RELATIVE sample_position
+
+COMPONENT c6_down = Union_cylinder(
+ material_string = "NbTi", priority = 60.5,
+ radius = 0.23, yheight = 0.059688,
+ p_interact = 0.25, number_of_activations = logic_level[3])
+AT (0,-0.056094000000000005,0) RELATIVE sample_position
+
+COMPONENT c1_down_vac = Union_cylinder(
+ material_string = "Vacuum", priority = 65.6,
+ radius = 0.027385, yheight = 0.053225,
+ p_interact = 0.25, number_of_activations = logic_level[3])
+AT (0,-0.050937500000000004,0) RELATIVE sample_position
+
+COMPONENT c2_down_vac = Union_cylinder(
+ material_string = "Vacuum", priority = 64.6,
+ radius = 0.065135, yheight = 0.061035,
+ p_interact = 0.25, number_of_activations = logic_level[3])
+AT (0,-0.0581275,0) RELATIVE sample_position
+
+COMPONENT c6_hat_up = Union_cylinder(
+ material_string = "Al", priority = 60.001,
+ radius = 0.2305, yheight = 0.01625,
+ p_interact = 0.25, number_of_activations = logic_level[5])
+AT (0,0.094062,0) RELATIVE sample_position
+
+COMPONENT c6_hat_down = Union_cylinder(
+ material_string = "Al", priority = 60.55,
+ radius = 0.2305, yheight = 0.01625,
+ p_interact = 0.25, number_of_activations = logic_level[5])
+AT (0,-0.09406400000000001,0) RELATIVE sample_position
+
+COMPONENT hat2_side_up = Union_cylinder(
+ material_string = "Al", priority = 63.92,
+ radius = 0.065085, yheight = 0.078435,
+ p_interact = 0.25, number_of_activations = logic_level[5])
+AT (0,0.057667500000000003,0) RELATIVE sample_position
+
+COMPONENT hat2_vac = Union_cylinder(
+ material_string = "Vacuum", priority = 63.95,
+ radius = 0.061335, yheight = 0.078445,
+ p_interact = 0.25, number_of_activations = logic_level[5])
+AT (0,0.0576575,0) RELATIVE sample_position
+
+COMPONENT hat2_up = Union_cylinder(
+ material_string = "Al", priority = 63.9,
+ radius = 0.101, yheight = 0.01751,
+ p_interact = 0.25, number_of_activations = logic_level[5])
+AT (0,0.08812500000000001,0) RELATIVE sample_position
+
+COMPONENT hat2_side_down = Union_cylinder(
+ material_string = "Al", priority = 63.93,
+ radius = 0.065085, yheight = 0.078435,
+ p_interact = 0.25, number_of_activations = logic_level[5])
+AT (0,-0.057667500000000003,0) RELATIVE sample_position
+
+COMPONENT hat2_vac_d = Union_cylinder(
+ material_string = "Vacuum", priority = 63.96,
+ radius = 0.061335, yheight = 0.078445,
+ p_interact = 0.25, number_of_activations = logic_level[5])
+AT (0,-0.0576575,0) RELATIVE sample_position
+
+COMPONENT hat2_down = Union_cylinder(
+ material_string = "Al", priority = 63.91,
+ radius = 0.101, yheight = 0.01751,
+ p_interact = 0.25, number_of_activations = logic_level[5])
+AT (0,-0.08812500000000001,0) RELATIVE sample_position
+
+COMPONENT hat1_side_up = Union_cylinder(
+ material_string = "Al", priority = 64.92,
+ radius = 0.027335, yheight = 0.070375,
+ p_interact = 0.25, number_of_activations = logic_level[5])
+AT (0,0.05144750000000001,0) RELATIVE sample_position
+
+COMPONENT hat1_vac = Union_cylinder(
+ material_string = "Vacuum", priority = 64.95,
+ radius = 0.023585, yheight = 0.070385,
+ p_interact = 0.25, number_of_activations = logic_level[5])
+AT (0,0.051437500000000004,0) RELATIVE sample_position
+
+COMPONENT hat1_up = Union_cylinder(
+ material_string = "Al", priority = 64.9,
+ radius = 0.06, yheight = 0.01726,
+ p_interact = 0.25, number_of_activations = logic_level[5])
+AT (0,0.07800000000000001,0) RELATIVE sample_position
+
+COMPONENT hat1_side_down = Union_cylinder(
+ material_string = "Al", priority = 64.93,
+ radius = 0.027335, yheight = 0.070375,
+ p_interact = 0.25, number_of_activations = logic_level[5])
+AT (0,-0.05144750000000001,0) RELATIVE sample_position
+
+COMPONENT hat1_vac_d = Union_cylinder(
+ material_string = "Vacuum", priority = 64.96,
+ radius = 0.023585, yheight = 0.070385,
+ p_interact = 0.25, number_of_activations = logic_level[5])
+AT (0,-0.051437500000000004,0) RELATIVE sample_position
+
+COMPONENT hat1_down = Union_cylinder(
+ material_string = "Al", priority = 64.91,
+ radius = 0.06, yheight = 0.01726,
+ p_interact = 0.25, number_of_activations = logic_level[5])
+AT (0,-0.07800000000000001,0) RELATIVE sample_position
+
+COMPONENT indisk_top = Union_cylinder(
+ material_string = "Al", priority = 63.911,
+ radius = 0.095, yheight = 0.013125,
+ p_interact = 0.25, number_of_activations = logic_level[6])
+AT (0,0.1259365,0) RELATIVE sample_position
+
+COMPONENT indisk_bottom = Union_cylinder(
+ material_string = "Al", priority = 63.912,
+ radius = 0.10001, yheight = 0.013125,
+ p_interact = 0.25, number_of_activations = logic_level[6])
+AT (0,0.1128125,0) RELATIVE sample_position
+
+COMPONENT indisk_top_down = Union_cylinder(
+ material_string = "Al", priority = 63.913,
+ radius = 0.095, yheight = 0.013125,
+ p_interact = 0.25, number_of_activations = logic_level[6])
+AT (0,-0.1259365,0) RELATIVE sample_position
+
+COMPONENT indisk_bottom_down = Union_cylinder(
+ material_string = "Al", priority = 63.914,
+ radius = 0.10001, yheight = 0.013125,
+ p_interact = 0.25, number_of_activations = logic_level[6])
+AT (0,-0.1128125,0) RELATIVE sample_position
+
+COMPONENT outdisk_bottom = Union_cylinder(
+ material_string = "Al", priority = 63.195,
+ radius = 0.255, yheight = 0.015,
+ p_interact = 0.25, number_of_activations = logic_level[6])
+AT (0,0.1128125,0) RELATIVE sample_position
+
+COMPONENT outdisk_bottom_down = Union_cylinder(
+ material_string = "Al", priority = 63.196,
+ radius = 0.255, yheight = 0.015,
+ p_interact = 0.25, number_of_activations = logic_level[6])
+AT (0,-0.1128125,0) RELATIVE sample_position
+
+COMPONENT outdisk_top = Union_cylinder(
+ material_string = "Al", priority = 63.198,
+ radius = 0.2305, yheight = 0.019385,
+ p_interact = 0.25, number_of_activations = logic_level[6])
+AT (0,0.13,0) RELATIVE sample_position
+
+COMPONENT outdisk_top_vac = Union_cylinder(
+ material_string = "Vacuum", priority = 63.199,
+ radius = 0.10006, yheight = 0.01499,
+ p_interact = 0.25, number_of_activations = logic_level[6])
+AT (0,0.13,0) RELATIVE sample_position
+
+COMPONENT outdisk_top_down = Union_cylinder(
+ material_string = "Al", priority = 63.1981,
+ radius = 0.2305, yheight = 0.019385,
+ p_interact = 0.25, number_of_activations = logic_level[6])
+AT (0,-0.13,0) RELATIVE sample_position
+
+COMPONENT outdisk_top_down_vac = Union_cylinder(
+ material_string = "Vacuum", priority = 63.1991,
+ radius = 0.10006, yheight = 0.01499,
+ p_interact = 0.25, number_of_activations = logic_level[6])
+AT (0,-0.13,0) RELATIVE sample_position
+
+COMPONENT thincap_up = Union_cylinder(
+ material_string = "Al", priority = 63.999,
+ radius = 0.2305, yheight = 0.0025,
+ p_interact = 0.25, number_of_activations = logic_level[6])
+AT (0,0.14125,0) RELATIVE sample_position
+
+COMPONENT thincap_down = Union_cylinder(
+ material_string = "Al", priority = 63.9991,
+ radius = 0.2305, yheight = 0.0025,
+ p_interact = 0.25, number_of_activations = logic_level[6])
+AT (0,-0.14125,0) RELATIVE sample_position
+
+COMPONENT logger_zx = Union_logger_2D_space(
+ D_direction_1 = "z", D1_min = -0.35,
+ D1_max = 0.35, n1 = 300,
+ D_direction_2 = "x", D2_min = -0.35,
+ D2_max = 0.35, n2 = 300,
+ filename = "logger_zx.dat")
+AT (0,0,0) RELATIVE outer_thin
+
+COMPONENT logger_zy = Union_logger_2D_space(
+ D_direction_1 = "z", D1_min = -0.35,
+ D1_max = 0.35, n1 = 300,
+ D_direction_2 = "y", D2_min = -0.25,
+ D2_max = 0.32, n2 = 300,
+ filename = "logger_zy.dat")
+AT (0,0,0) RELATIVE outer_thin
+
+COMPONENT abs_logger_space_zx = Union_abs_logger_2D_space(
+ target_geometry = "gd_cone_up,gd_cone_down", D_direction_1 = "z",
+ D1_min = -0.35, D1_max = 0.35,
+ n1 = 300, D_direction_2 = "x",
+ D2_min = -0.35, D2_max = 0.35,
+ n2 = 300, filename = "abs_logger_zx.dat")
+AT (0,0,0) RELATIVE outer_thin
+
+COMPONENT abs_logger_space_zy = Union_abs_logger_2D_space(
+ target_geometry = "gd_cone_up,gd_cone_down", D_direction_1 = "z",
+ D1_min = -0.35, D1_max = 0.35,
+ n1 = 300, D_direction_2 = "y",
+ D2_min = -0.25, D2_max = 0.32,
+ n2 = 300, filename = "abs_logger_zy.dat")
+AT (0,0,0) RELATIVE outer_thin
+
+COMPONENT master = Union_master(
+ enable_tagging = 1, history_limit = 300000)
+AT (0,0,0) RELATIVE sample_position
+EXTEND %{
+scatter_count = number_of_scattering_events;
+sample_scatter_count = scattered_flag[1];
+%}
+
+COMPONENT stop = Union_stop()
+AT (0,0,0) ABSOLUTE
+
+COMPONENT Cyl_monitor_TOF = Cyl_monitor_TOF(
+ nr = 360, filename = "Output.cyl",
+ yheight = 0.5, radius = 0.88875,
+ restore_neutron = 1, nt = 300,
+ tmin = 0.001, tmax = 0.006)
+AT (0,0,0) RELATIVE sample_position
+ROTATED (0,0,0) RELATIVE sample_position
+
+COMPONENT collimator = Collimator_radial(
+ yheight = 0.6, length = coll_length,
+ divergence = coll_div, theta_min = -180,
+ theta_max = 180, radius = coll_rad,
+ roc = roc_angle, verbose = 1)
+AT (0,0,0) RELATIVE sample_position
+
+COMPONENT banana = Monitor_nD(
+ yheight = 0.1, restore_neutron = 1,
+ radius = detector_rad, options = "theta limits=[-180 180] bins=1800, banana")
+AT (0,0,0) RELATIVE sample_position
+ROTATED (0,0,0) RELATIVE sample_position
+
+COMPONENT banana_sample = Monitor_nD(
+ yheight = 0.1, restore_neutron = 1,
+ radius = detector_rad, options = "theta limits=[-180 180] bins=1800, banana")
+WHEN (scatter_count==1 && sample_scatter_count==1)
+AT (0,0,0) RELATIVE sample_position
+ROTATED (0,0,0) RELATIVE sample_position
+
+COMPONENT banana_background = Monitor_nD(
+ yheight = 0.1, restore_neutron = 1,
+ radius = detector_rad, options = "theta limits=[-180 180] bins=1800, banana")
+WHEN (!(scatter_count==1 && sample_scatter_count==1))
+AT (0,0,0) RELATIVE sample_position
+ROTATED (0,0,0) RELATIVE sample_position
+
+FINALLY 
+%{
+// Start of finally for generated BIFROST
+%}
+
+END
