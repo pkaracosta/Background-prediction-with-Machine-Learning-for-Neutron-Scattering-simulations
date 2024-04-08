@@ -1,6 +1,9 @@
 # Machine Learning for Background Prediction in Neutron Scattering simulations
 This repository hosts the data processing and machine learning code for background prediction in neutron scattering simulations. Developed for my M.Sc. thesis at Niels Bohr Institute, University of Copenhagen
 
+The following poster is an overview of the project and was presented at the Machine Learning Conference for X-Ray and Neutron-Based Experiments in Garching, April 2024.
+[embed]http://github.com/pkaracosta/Machine_Learning_background_prediction/Petroula_Karakosta_poster.pdf[/embed] 
+
 This animation shows neutron scattering events as the beam with $\lambda$=4 Å reaches the sample environment.
 <table>
   <tr>
